@@ -1,0 +1,343 @@
+.bodyDark{
+
+.header{
+
+    position: relative;
+    z-index: 1;
+    background-color: #111;
+
+    .navbar-light .navbar-nav .nav-link.active, .navbar-light .navbar-nav .show>.nav-link{
+        color: $celeste;
+    }
+
+    .navbar{
+        border-bottom: solid 1px $verde;
+    }
+
+    .barraFinalHeader{
+
+        background-color: $celeste;
+        text-align: center;
+        color: $blanco;
+       
+
+        .textoBarraFinalHeader{
+        margin-bottom: 0;
+        padding: 5px;
+        font-size: large;
+        display: none;
+    }
+
+    #activo{
+        display: block;
+    }
+    }
+
+    .navbar {
+        padding-top: 0rem;
+       
+
+        #postNavbar{
+            border-bottom: solid 1px $verde;
+        }
+
+        .navbar-brand {
+            color: $celeste;
+            .logo {
+                width: 130px;
+                height: auto;
+                margin-left: 100px;
+            }
+        }
+
+        .navbar-nav {
+            padding-top: 0.5rem;
+            font-size: 18px;
+            font-weight: 600;
+
+            .cruzCierre {
+                width: 15px;
+                height: auto;
+            }
+            
+        }
+
+        .corrido{
+            
+            text-align: center;
+                    .divTemperatura{
+                        padding-left: 30%;
+                        position: relative;
+                        left: 110%;
+                        color: white;
+                    h2{
+                        font-size: 1rem;
+                    }
+                    .temperatura{
+                        font-size: 2rem;
+                        margin-bottom: 0;
+                    }
+                    span{
+                        color: $celeste;
+                    }
+                }
+                }
+
+        .saludo{
+            font-size: x-large;
+            font-family: $fuentePrincipal;
+            display: none;
+            color: white;
+        }
+
+        #linkCargaProducto {
+            display: none;
+        }
+
+        #cargarProducto {
+            color: $violeta;
+        }
+
+        #ventanaCargaProducto {
+            display: none;
+         position: absolute;
+            z-index: 2;
+            width: 50vw;
+            right: 24vw;
+            box-shadow: 2px 7px 27px -5px rgba(0, 0, 0, 0.75);
+            -webkit-box-shadow: 2px 7px 27px -5px rgba(0, 0, 0, 0.75);
+            -moz-box-shadow: 2px 7px 27px -5px rgba(0, 0, 0, 0.75);
+            text-align: center;
+            padding: 3rem;
+            background-color: black;
+            color: white;
+           
+            .cargadorDeProductosTitulos{
+                padding-left: 30%;
+            }
+
+            #botonCargaProducto {
+                border-radius: 30px;
+                background-color: $celeste;
+                border-color: $celeste;
+                box-shadow: 0px 0px 0px 3px  rgba(46,153,176,0.75);
+                -webkit-box-shadow: 0px 0px 0px 3px  rgba(46,153,176,0.75);
+                -moz-box-shadow: 0px 0px 0px 3px  rgba(46,153,176,0.75);
+
+                
+                &:active{
+                    box-shadow: none;
+                    -webkit-box-shadow: none;
+                    -moz-box-shadow: none;
+                }
+            }
+
+            .divInput {
+                padding: 0rem 5rem;
+            }
+
+        }
+
+        .links_nav {
+            margin: 0 1rem;
+            text-decoration: none;
+            background-image: linear-gradient($violeta , $violeta);
+            background-position: 50% 100%;
+            background-repeat: no-repeat;
+            background-size: 0% 2px;
+            transition: background-size .3s;
+            
+            &:hover{
+                background-size: 100% 2px;
+            }
+        }
+
+    
+
+        .navbar-collapse {
+            flex-grow: 0;
+
+            #cuenta {
+                width: 100%;
+                position: relative;
+                z-index: 1;
+
+                .posBotonCuenta {
+                    display: none;
+                    padding: 1rem 1rem;
+                    position: absolute;
+                    z-index: 2;
+                    width: 20vw;
+                    right: -5vw;
+                    height: 100vh;
+                    background-color: black;
+                    box-shadow: 2px 7px 27px -5px rgba(0, 0, 0, 0.75);
+                    -webkit-box-shadow: 2px 7px 27px -5px rgba(0, 0, 0, 0.75);
+                    -moz-box-shadow: 2px 7px 27px -5px rgba(0, 0, 0, 0.75);
+                    color: $celeste;
+
+                    .boton2,
+                    .boton3, .boton4, .boton5 {
+                        border-radius: 30px;
+                        background-color: $celeste;
+                        border-color: $celeste;
+                        box-shadow: 0px 0px 0px 3px  rgba(46,153,176,0.75);
+                        -webkit-box-shadow: 0px 0px 0px 3px  rgba(46,153,176,0.75);
+                        -moz-box-shadow: 0px 0px 0px 3px  rgba(46,153,176,0.75);
+                        margin: 5px;
+
+                        
+                        &:active{
+                            box-shadow: none;
+                            -webkit-box-shadow: none;
+                            -moz-box-shadow: none;
+                        }
+                    }
+
+                    #formularioDeRegistro{
+                        display: none;
+                    }
+
+                }
+            }
+
+
+
+            #carrito {
+                width: 100%;
+                position: relative;
+                z-index: 1;
+                
+
+                #posBotonCarrito {
+                    padding: 1rem 1rem;
+                    display: none;
+                    position: absolute;
+                    z-index: 2;
+                    background-color: black;
+                    width: 30vw;
+                    height: 100vh;
+                    right: -0.89vw;
+                    box-shadow: 2px 7px 27px -5px rgba(0, 0, 0, 0.75);
+                    -webkit-box-shadow: 2px 7px 27px -5px rgba(0, 0, 0, 0.75);
+                    -moz-box-shadow: 2px 7px 27px -5px rgba(0, 0, 0, 0.75);
+
+
+                    .subtotalEnCarrito{
+                        color: white;
+                    }
+
+                    .imagenEnCarrito {
+                        width: 6rem;
+                        height: 9rem;
+                        margin: 0 1rem;
+                    }
+
+                    .muestrarioCarrito {
+                        margin-bottom: 1rem;
+                        border-bottom: 0.5px solid;
+                    }
+
+                    #carritoProductosElegidos {
+                        height: 50%;
+                        margin-bottom: 2rem;
+                     
+
+                    }
+                    .boton8{
+                        border-radius: 30px;
+                        background-color: $celeste;
+                        border-color: $celeste;
+                        box-shadow: 0px 0px 0px 3px  rgba(46,153,176,0.75);
+                        -webkit-box-shadow: 0px 0px 0px 3px  rgba(46,153,176,0.75);
+                        -moz-box-shadow: 0px 0px 0px 3px  rgba(46,153,176,0.75);
+                        margin: 5px;
+
+                        
+                        &:active{
+                            box-shadow: none;
+                            -webkit-box-shadow: none;
+                            -moz-box-shadow: none;
+                        }
+                    }
+
+
+                
+                    .divCompletarCompra{
+                        
+                        
+                       
+
+                    .boton6, .boton7{
+                        border-radius: 30px;
+                        background-color: $celeste;
+                        border-color: $celeste;
+                        box-shadow: 0px 0px 0px 3px  rgba(46,153,176,0.75);
+                        -webkit-box-shadow: 0px 0px 0px 3px  rgba(46,153,176,0.75);
+                        -moz-box-shadow: 0px 0px 0px 3px  rgba(46,153,176,0.75);
+                        margin: 5px;
+
+                        
+                        &:active{
+                            box-shadow: none;
+                            -webkit-box-shadow: none;
+                            -moz-box-shadow: none;
+                        }
+                      
+                    
+                    }
+  
+                    
+                    
+                }
+
+                #carritoAplicarDescuento{
+                    display: none;
+                    color: white;
+                   
+                }
+
+                    .productosEnCarrito {
+                        padding-right: 1rem;
+                        align-items: center;
+                        color: white;
+
+                        .sumadorCarrito{
+                            display: flex;
+                            justify-content: space-evenly;
+                            align-items: baseline;
+                        .botonCarritoIngresado{
+                            background-color: $celeste;
+                        border-color: $celeste;
+                        box-shadow: 0px 0px 0px 3px  rgba(46,153,176,0.75);
+                        -webkit-box-shadow: 0px 0px 0px 3px  rgba(46,153,176,0.75);
+                        -moz-box-shadow: 0px 0px 0px 3px  rgba(46,153,176,0.75);
+                            color: white;
+
+                            &:active{
+                                box-shadow: none;
+                                -webkit-box-shadow: none;
+                                -moz-box-shadow: none;
+                            }
+                        }
+                    }
+                    }
+
+                    .carritoVacio {
+                        color: $celeste;
+                        display: block;
+                    }
+                }
+            }
+        }
+    }
+}
+
+
+@media (max-width:768px) {
+    .header {
+        .navbar-collapse {
+            flex-grow: 1;
+        }
+    }
+}}
