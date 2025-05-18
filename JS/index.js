@@ -1,17 +1,35 @@
+const log = (level, message, data = null) => {
+  const timestamp = new Date().toISOString();
+  if (data) {
+    console[level](`[${level.toUpperCase()}] ${timestamp} - ${message}`, data);
+  } else {
+    console[level](`[${level.toUpperCase()}] ${timestamp} - ${message}`);
+  }
+};
+
+
 const subtotal = () => carrito.reduce((acc, el) => acc + el.precioFinal, 0);
 let total = subtotal;
 let temp = null;
 
+log("debug", "Inicio de obtención de datos del clima");
 fetch(`https://api.openweathermap.org/data/2.5/weather?id=3435910&appid=9aa0d7d7ace195e870036d608160609b`)
   .then(respuesta => respuesta.json())
   .then(data => {
     if (data && data.main && typeof data.main.temp === 'number') {
       temp = Math.round(data.main.temp - 273.15);
+      log("info", "Temperatura obtenida correctamente", { temp });
     } else {
       console.warn("No se pudo obtener la temperatura");
+      log("warning", "La respuesta de la API de clima no contiene temperatura válida");
     }
+    log("debug", "Final de obtención de datos del clima");
   })
-  .catch(err => console.error("Error al obtener datos del clima:", err));
+  .catch(err => {
+    console.error("Error al obtener datos del clima:", err);
+    log("error", "Excepción en la obtención de datos del clima", err);
+  });
+
 
 const basePorcentaje = (n) => {
     return (m) => (m * n) / 100
@@ -25,41 +43,56 @@ const porcentaje35 = basePorcentaje(35);
 
 // CARGAR PÁGINA / RECARGAR STORAGE
 const guardarStorage = (clave, valor) => {
-    try {
-      if (typeof clave !== 'string') {
-        throw new TypeError('La clave debe ser una cadena');
-      }
-  
-      if (valor === undefined) {
-        throw new Error('El valor no puede ser undefined');
-      }
-  
-      const valorString = typeof valor === 'string' ? valor : JSON.stringify(valor);
-      localStorage.setItem(clave, valorString);
-    } catch (e) {
-      console.error(`Error guardando ${clave} en localStorage:`, e);
+  log("debug", `Inicio de guardarStorage con clave: ${clave}`);
+  try {
+    if (typeof clave !== 'string') {
+      throw new TypeError('La clave debe ser una cadena');
     }
+    if (valor === undefined) {
+      throw new Error('El valor no puede ser undefined');
+    }
+
+    const valorString = typeof valor === 'string' ? valor : JSON.stringify(valor);
+    localStorage.setItem(clave, valorString);
+    log("info", `Se guardó correctamente en localStorage: ${clave}`);
+  } catch (e) {
+    console.error(`Error guardando ${clave} en localStorage:`, e);
+    log("error", `Error en guardarStorage para clave: ${clave}`, e);
+  }
+  log("debug", `Final de guardarStorage con clave: ${clave}`);
 };
+
   
 const obtenerStorageSeguro = (clave) => {
-    try {
-      if (typeof clave !== 'string') {
-        throw new TypeError('La clave debe ser una cadena');
-      }
-  
-      const item = localStorage.getItem(clave);
-      if (!item) return null;
-  
-      const parsed = JSON.parse(item);
-      return parsed;
-    } catch (e) {
-      console.error(`Error al parsear ${clave}:`, e);
+  log("debug", `Inicio de obtenerStorageSeguro con clave: ${clave}`);
+  try {
+    if (typeof clave !== 'string') {
+      throw new TypeError('La clave debe ser una cadena');
+    }
+
+    const item = localStorage.getItem(clave);
+    if (!item) {
+      log("warning", `No se encontró el ítem en localStorage con clave: ${clave}`);
       return null;
     }
+
+    const parsed = JSON.parse(item);
+    log("info", `Se obtuvo correctamente el valor de ${clave}`);
+    return parsed;
+  } catch (e) {
+    console.error(`Error al parsear ${clave}:`, e);
+    log("error", `Error en obtenerStorageSeguro para clave: ${clave}`, e);
+    return null;
+  } finally {
+    log("debug", `Final de obtenerStorageSeguro con clave: ${clave}`);
+  }
 };
+
   
 
 window.onload = () => {
+    log("debug", "Inicio de window.onload");
+
     let productoCarritoGuardado = localStorage.getItem("productosCarritoStorage");
     let carritoGuardado = localStorage.getItem("carritoStorage");
     let productoGuardadoEnStorage = localStorage.getItem("productosNuevos");
@@ -79,23 +112,28 @@ window.onload = () => {
         ) {
             carritoProductosElegidos.innerHTML = `${productoCarritoGuardado}`;
             final.push(productoCarritoGuardado);
+            log("info", "Producto del carrito cargado desde localStorage");
         } else {
             throw new Error("El formato de productosCarritoStorage no es válido");
         }
         } catch (e) {
         console.error("Error al parsear productosCarritoStorage:", e);
+        log("error", "Error al cargar productoCarritoGuardado", e);
         }
     }
   
     // CARRITO GUARDADO
     try {
         carritoGuardado = JSON.parse(carritoGuardado);
+        log("info", "Carrito guardado cargado correctamente");
     } catch (e) {
         console.error("Error al parsear carritoStorage:", e);
+        log("error", "Error al cargar carritoStorage", e);
         carritoGuardado = undefined;
     }
     
     if (carritoGuardado !== undefined && Array.isArray(carritoGuardado)) {
+        log("debug", "Procesando carrito cargado...");
         for (let i = 0; i < carritoGuardado.length; i++) {
         const item = carritoGuardado[i];
     
@@ -133,10 +171,12 @@ window.onload = () => {
                 `);
     
                 carritoProductosElegidos.innerHTML = `${final.join("")}`;
+                log("info", `Producto restaurado al carrito: ${e.nombre}`, item);
             } else {
                 console.warn(
                 `Tipos inválidos para cantidades o e.cantidad en el producto "${e.nombre}"`
                 );
+                log("warning", "Error de tipo en cantidades o stock", { producto: e.nombre });
             }
             }
         }
@@ -153,6 +193,7 @@ window.onload = () => {
                 <button type="button" class="btn btn-primary boton7" id="botonDescuento">Código de descuento</button>
             </div>
             <button type="button" class="btn btn-primary boton8 botonReset">Eliminar compra</button>`;
+            log("info", "Subtotal mostrado correctamente", { subtotal: valorSubtotal });
         }
         }
     }
@@ -192,14 +233,18 @@ window.onload = () => {
                     <input type="button" value="Boton" class="boton btn-primary" name="Agregar">
                 </div>`;
             padreTarjeta.appendChild(tarjetanueva);
+            log("info", "Producto nuevo cargado desde storage", { nombre });
             } else {
             console.warn("Los elementos HTML necesarios no están definidos correctamente.");
+            log("warning", "Elementos DOM no definidos correctamente para producto nuevo");
             }
         } else {
             console.warn("Datos insuficientes o inválidos para crear un producto.");
+            log("warning", "Datos inválidos para producto nuevo", productoGuardadoEnStorage);
         }
         } catch (e) {
         console.error("Error al parsear productosNuevos:", e);
+        log("error", "Error al parsear productosNuevos", e);
         }
     }
   
@@ -222,11 +267,14 @@ window.onload = () => {
             typeof contraseña === "string"
         ) {
             usuarios.push({ nombre, edad, mail, contraseña });
+            log("info", "Usuario cargado desde storage", { nombre, mail });
         } else {
             console.warn("Datos de usuario inválidos o incompletos.");
+            log("warning", "Datos inválidos para usuario nuevo", usuarioGuardadoEnStorage);
         }
         } catch (e) {
         console.error("Error al parsear usuarioNuevo:", e);
+        log("error", "Error al parsear usuarioNuevo", e);
         }
     }
   
@@ -245,10 +293,12 @@ window.onload = () => {
     
             if (saludo[0].style.display === "block" && formularioIngreso instanceof HTMLElement) {
             formularioIngreso.innerHTML = `<h3> Ya has ingresado a tu cuenta</h3>`;
+            log("info", "Usuario ya ingresado detectado por storage");
             }
         }
         } catch (e) {
         console.error("Error al parsear saludo:", e);
+        log("error", "Error al parsear saludo del usuario", e);
         }
     }
   
@@ -261,9 +311,11 @@ window.onload = () => {
             ingresoNuevo.classList.add("corrido");
             ingresoNuevo.innerHTML = temperaturaEnStorage;
             navbar.appendChild(ingresoNuevo);
+            log("info", "Temperatura cargada desde localStorage y mostrada en navbar");
         }
         } catch (e) {
         console.error("Error al parsear temperatura:", e);
+        log("error", "Error al parsear temperatura desde storage", e);
         }
     }
     
@@ -283,11 +335,14 @@ window.onload = () => {
     
         botonCambioPagina.checked = true;
         body[0].classList.add("bodyDark");
+        log("info", "Modo oscuro activado desde localStorage");
         } else {
         console.warn("Elementos para el modo oscuro no están bien definidos.");
+        log("warning", "Modo oscuro no pudo activarse por elementos inválidos");
         }
     }
   
+    log("debug", "Fin de window.onload");
 };
 
 
@@ -308,63 +363,80 @@ const linkCargaProducto = document.getElementById("linkCargaProducto");
  * @param {Object} compra - Objeto que representa el producto.
  * @param {number|string} cantidad - Cantidad deseada del producto.
  */
+
 const botonCompra = (compra, cantidad) => {
-    const cantidadNumerica = parseInt(cantidad);
+  log("debug", "Inicio de botonCompra", { compra, cantidad });
 
-    if (
-        typeof compra === "object" &&
-        compra !== null &&
-        typeof compra.nombre === "string" &&
-        typeof compra.stock === "string" &&
-        typeof compra.imagen === "string" &&
-        typeof compra.precio === "number" &&
-        typeof compra.cantidad === "number" &&
-        !isNaN(cantidadNumerica)
-    ) {
-        if (cantidadNumerica > 0 && compra.stock.toLowerCase() === "si") {
-        if (cantidadNumerica <= compra.cantidad) {
-            compra.cantidad -= cantidadNumerica;
-            compra.stock = compra.cantidad > 0 ? "si" : "no";
+  const cantidadNumerica = parseInt(cantidad);
 
-            const precioParcial = compra.precio * cantidadNumerica;
-            const yaEnCarrito = carrito.find((el) => el.producto === compra.nombre);
+  if (
+    typeof compra === "object" &&
+    compra !== null &&
+    typeof compra.nombre === "string" &&
+    typeof compra.stock === "string" &&
+    typeof compra.imagen === "string" &&
+    typeof compra.precio === "number" &&
+    typeof compra.cantidad === "number" &&
+    !isNaN(cantidadNumerica)
+  ) {
+    if (cantidadNumerica > 0 && compra.stock.toLowerCase() === "si") {
+      if (cantidadNumerica <= compra.cantidad) {
+        log("info", `Usuario añadió producto al carrito: ${compra.nombre}`, { cantidad: cantidadNumerica });
 
-            if (yaEnCarrito) {
-            yaEnCarrito.cantidades += cantidadNumerica;
-            yaEnCarrito.precioFinal += precioParcial;
-            } else {
-            carrito.push({
-                cantidades: cantidadNumerica,
-                producto: compra.nombre,
-                precioFinal: precioParcial,
-                precioIndividual: compra.precio,
-                imagen: compra.imagen,
-            });
-            }
+        compra.cantidad -= cantidadNumerica;
+        compra.stock = compra.cantidad > 0 ? "si" : "no";
 
-            // Confirmación visual
-            if (typeof Toastify === "function") {
-            Toastify({
-                text: `Agregaste ${cantidadNumerica} productos a tu carrito`,
-                className: "info",
-                duration: 1000,
-                style: {
-                background: "#D74E09",
-                borderRadius: "30px",
-                },
-            }).showToast();
-            } else {
-            console.warn("Toastify no está disponible");
-            }
+        const precioParcial = compra.precio * cantidadNumerica;
+        const yaEnCarrito = carrito.find((el) => el.producto === compra.nombre);
+
+        if (yaEnCarrito) {
+          yaEnCarrito.cantidades += cantidadNumerica;
+          yaEnCarrito.precioFinal += precioParcial;
         } else {
-            console.warn("La cantidad solicitada supera el stock disponible.");
+          carrito.push({
+            cantidades: cantidadNumerica,
+            producto: compra.nombre,
+            precioFinal: precioParcial,
+            precioIndividual: compra.precio,
+            imagen: compra.imagen,
+          });
         }
+
+        if (typeof Toastify === "function") {
+          Toastify({
+            text: `Agregaste ${cantidadNumerica} productos a tu carrito`,
+            className: "info",
+            duration: 1000,
+            style: {
+              background: "#D74E09",
+              borderRadius: "30px",
+            },
+          }).showToast();
         } else {
-        console.warn("Cantidad inválida o el producto no tiene stock.");
+          console.warn("Toastify no está disponible");
         }
+
+      } else {
+        console.warn("La cantidad solicitada supera el stock disponible.");
+        log("warning", "Cantidad mayor que stock disponible", {
+          producto: compra.nombre,
+          solicitado: cantidadNumerica,
+          disponible: compra.cantidad
+        });
+      }
     } else {
-        console.error("El objeto 'compra' no es válido o los datos son incorrectos:", compra);
+      console.warn("Cantidad inválida o el producto no tiene stock.");
+      log("warning", "Producto sin stock o cantidad inválida", {
+        producto: compra.nombre,
+        cantidad: cantidadNumerica
+      });
     }
+  } else {
+    console.error("El objeto 'compra' no es válido o los datos son incorrectos:", compra);
+    log("error", "Objeto 'compra' inválido", compra);
+  }
+
+  log("debug", "Fin de botonCompra", { compra, cantidad });
 };
 
 
@@ -382,7 +454,10 @@ for (let i = 0; i < stock.length; i++) {
  * Función para manejar la lógica de agregar productos al carrito.
  * @param {number} index - Índice del producto en stock.
  */
+
 function agregarCarrito(index) {
+    log("debug", "Inicio de agregarCarrito", { index });
+
     const producto = stock[index];
     const inputCantidad = botonCantidad[index];
 
@@ -396,6 +471,10 @@ function agregarCarrito(index) {
         const cantidadSeleccionada = parseInt(inputCantidad.value);
 
         if (producto.cantidad >= cantidadSeleccionada && cantidadSeleccionada > 0) {
+            log("info", "Producto válido para agregar al carrito", {
+                producto: producto.nombre,
+                cantidad: cantidadSeleccionada
+            });
             botonCompra(producto, cantidadSeleccionada);
 
             // Limpiamos y reconstruimos el HTML del carrito
@@ -452,16 +531,18 @@ function agregarCarrito(index) {
 
         } else {
             console.warn(`Cantidad inválida: ${cantidadSeleccionada}. Stock disponible: ${producto.cantidad}`);
-            if (ventaProducto[index]) {
-                ventaProducto[index].innerHTML += `
-                    <p>Fuera de stock</p><br>
-                    Stock: ${producto.cantidad}
-                `;
+            log("warning", "Cantidad inválida o sin stock", {
+                producto: producto.nombre,
+                cantidadSeleccionada,
+                stock: producto.cantidad
+            });
             }
+        } else {
+            console.error(`Datos inválidos para el producto en la posición ${index}`, producto);
+            log("error", "Error de datos en agregarCarrito", { index, producto });
         }
-    } else {
-        console.error(`Datos inválidos para el producto en la posición ${index}`, producto);
-    }
+
+        log("debug", "Fin de agregarCarrito", { index });
 }
 
 
@@ -512,9 +593,13 @@ const botonSubmit = document.getElementsByClassName("boton2");
  * Aplica un descuento según el código ingresado y actualiza el total.
  * @param {string} codigo - Código de descuento (ej. 'hipocampo', 'bolso').
  */
+
 const descuento = (codigo) => {
+    log("debug", "Inicio de descuento", { codigo });
+
     if (typeof codigo !== "string") {
         console.warn("Código de descuento inválido");
+        log("warning", "Código no es string válido", { codigo });
         return;
     }
 
@@ -522,6 +607,7 @@ const descuento = (codigo) => {
 
     if (typeof subtotal !== "function") {
         console.error("La función 'subtotal' no está definida");
+        log("error", "subtotal() no está definida");
         return;
     }
 
@@ -529,6 +615,7 @@ const descuento = (codigo) => {
 
     if (isNaN(subtotalActual)) {
         console.error("El subtotal no es un número válido");
+        log("error", "Subtotal inválido", { subtotalActual });
         return;
     }
 
@@ -536,34 +623,24 @@ const descuento = (codigo) => {
 
     switch (codigoNormalizado) {
         case "hipocampo":
-            if (typeof porcentaje10 === "function") {
-                totalCalculado = subtotalActual - porcentaje10(subtotalActual);
-            } else {
-                console.error("La función 'porcentaje10' no está definida");
-                return;
-            }
+            totalCalculado = subtotalActual - porcentaje10(subtotalActual);
+            log("info", "Descuento del 10% aplicado", { totalCalculado });
             break;
-
         case "bolso":
-            if (typeof porcentaje25 === "function") {
-                totalCalculado = subtotalActual - porcentaje25(subtotalActual);
-            } else {
-                console.error("La función 'porcentaje25' no está definida");
-                return;
-            }
+            totalCalculado = subtotalActual - porcentaje25(subtotalActual);
+            log("info", "Descuento del 25% aplicado", { totalCalculado });
             break;
-
         default:
             totalCalculado = parseFloat(subtotalActual);
+            log("warning", "Código de descuento no reconocido", { codigo });
             break;
     }
 
     if (typeof total !== "undefined") {
         total = totalCalculado;
-    } else {
-        console.log("Total calculado:", totalCalculado);
-        return totalCalculado;
     }
+
+    log("debug", "Fin de descuento", { totalCalculado });
 };
 
 
@@ -650,6 +727,7 @@ if (iconoCarrito) {
                             }
 
                             botonMenosCarrito[i].onclick = () => {
+                                log("debug", `Inicio de botón '-' para producto ${nombreProductoEnCarrito[i].innerText}`);
                                 try {
                                     for (let el of carrito) {
                                         if (el.producto === nombreProductoEnCarrito[i].innerText) {
@@ -657,6 +735,7 @@ if (iconoCarrito) {
                                             el.precioFinal = el.precioIndividual * el.cantidades;
 
                                             if (el.cantidades <= 0) {
+                                                log("info", `Producto eliminado del carrito: ${el.producto}`);
                                                 final.splice(i, 1);
                                                 if (carritoProductosElegidos) carritoProductosElegidos.innerHTML = `${final.join("")}`;
                                                 carrito.splice(i, 1);
@@ -667,6 +746,7 @@ if (iconoCarrito) {
                                                     if (carritoSubtotal) carritoSubtotal.innerHTML = null;
                                                     localStorage.removeItem("carritoStorage");
                                                     localStorage.removeItem("productosCarritoStorage");
+                                                    log("info", "Carrito vaciado completamente");
                                                 } else {
                                                     guardarStorage("carritoStorage", JSON.stringify(carrito));
                                                     if (carritoSubtotal) {
@@ -710,17 +790,21 @@ if (iconoCarrito) {
 
                                                 if (textoCarritoVacio[0]) textoCarritoVacio[0].innerHTML = `Mi pedido`;
                                                 guardarStorage("carritoStorage", JSON.stringify(carrito));
+                                                log("info", `Cantidad del producto decrecida: ${el.producto}`, { cantidades: el.cantidades });
                                             }
                                         }
                                     }
                                 } catch (err) {
                                     console.error("Error al decrementar cantidad", err);
+                                    log("error", "Excepción al decrementar producto en carrito", err);
                                 }
+                                log("debug", `Fin de botón '-' para producto ${nombreProductoEnCarrito[i].innerText}`);
                             }
                         }
 
                         if (subtotal() !== 0 && botonFinalizarCompra[0]) {
                             botonFinalizarCompra[0].onclick = () => {
+                                log("debug", "Inicio de botón 'Eliminar compra'");
                                 try {
                                     Swal.fire({
                                         title: '¡PRONTO PODRÁS COMPLETAR EL PROCESO!',
@@ -820,11 +904,14 @@ if (iconoCarrito) {
                                             contadorIcono.innerText = `0`;
                                             localStorage.removeItem("carritoStorage");
                                             localStorage.removeItem("productosCarritoStorage");
+                                            log("info", "Usuario eliminó todos los productos del carrito");
                                         }
                                     });
                                 } catch (err) {
                                     console.error("Error eliminando compra", err);
+                                    log("error", "Excepción al eliminar compra completa", err);
                                 }
+                                log("debug", "Fin de botón 'Eliminar compra'");
                             }
                         }
                     }
@@ -911,6 +998,7 @@ let botonVolverRegistrarse = document.getElementsByClassName("boton5");
 if (botonRegistrarme && botonRegistrarme[0]) {
     botonRegistrarme[0].onclick = (e) => {
         try {
+            log("debug", "Inicio de evento botonRegistrarme");
             if (e && typeof e.preventDefault === "function") {
                 e.preventDefault();
             }
@@ -930,6 +1018,7 @@ if (botonRegistrarme && botonRegistrarme[0]) {
             if (botonVolverRegistrarse && botonVolverRegistrarse[0]) {
                 botonVolverRegistrarse[0].onclick = () => {
                     try {
+                        log("info", "Usuario decidió volver al formulario de ingreso");
                         if (usuariosTitulo) {
                             usuariosTitulo.innerText = "Ingreso a cuenta";
                         }
@@ -943,12 +1032,15 @@ if (botonRegistrarme && botonRegistrarme[0]) {
                         }
                     } catch (err) {
                         console.error("Error al volver al formulario de ingreso:", err);
+                        log("error", "Excepción al volver al formulario de ingreso", err);
                     }
                 };
             }
 
             if (formRegistrarse && typeof formRegistrarse.onsubmit === "undefined") {
                 formRegistrarse.onsubmit = (el) => {
+                    log("debug", "Inicio de registro de usuario");
+
                     try {
                         if (el && typeof el.preventDefault === "function") {
                             el.preventDefault();
@@ -956,7 +1048,7 @@ if (botonRegistrarme && botonRegistrarme[0]) {
 
                         let datosUsuarioNuevo = el.target;
                         if (!datosUsuarioNuevo || typeof datosUsuarioNuevo.length === "undefined") {
-                            console.error("Formulario de registro no válido.");
+                            log("error", "Formulario de registro incompleto");
                             return;
                         }
 
@@ -974,15 +1066,18 @@ if (botonRegistrarme && botonRegistrarme[0]) {
 
                             // Validación básica de campos no vacíos
                             if (!usuarioNuevo.nombre || !usuarioNuevo.edad || !usuarioNuevo.mail || !usuarioNuevo.contraseña) {
-                                console.error("Todos los campos deben estar completos para registrarse.");
+                                log("warning", "Campos de registro incompletos o inválidos", usuarioNuevo);
+                                console.warn("Todos los campos deben estar completos para registrarse.");
                                 return;
                             }
 
                             try {
                                 let usuarioNuevoStorage = JSON.stringify(usuarioNuevo);
                                 guardarStorage("usuarioNuevo", usuarioNuevoStorage);
+                                log("info", "Usuario registrado y guardado en localStorage", { nombre: usuarioNuevo.nombre, mail: usuarioNuevo.mail });
                             } catch (err) {
                                 console.error("Error guardando usuario en storage:", err);
+                                log("error", "Excepción al guardar usuario en storage", err);
                             }
 
                             usuarios.push({
@@ -1006,7 +1101,10 @@ if (botonRegistrarme && botonRegistrarme[0]) {
 
                         } else {
                             console.error("Formulario incompleto o incorrecto.");
+                            log("error", "Excepción en proceso de registro de usuario", err);
                         }
+
+                        log("debug", "Fin de registro de usuario");
 
                     } catch (err) {
                         console.error("Error al completar registro de usuario:", err);
@@ -1016,7 +1114,9 @@ if (botonRegistrarme && botonRegistrarme[0]) {
 
         } catch (err) {
             console.error("Error en el proceso de registro:", err);
+            log("error", "Excepción general en botón de registro", err);
         }
+         log("debug", "Fin de evento botonRegistrarme");
     };
 }
 
@@ -1028,6 +1128,7 @@ let navbar = document.getElementById("barraInicial");
 
 if (iconoCuenta) {
     iconoCuenta.onclick = () => {
+        log("debug", "Inicio de evento iconoCuenta (apertura login)");
         try {
             if (contenedorForm && contenedorForm.style) {
                 if (contenedorForm.style.display === "none") {
@@ -1045,6 +1146,7 @@ if (iconoCuenta) {
 
                     if (formularioIngreso) {
                         formularioIngreso.onsubmit = (e) => {
+                            log("debug", "Inicio de envío de formulario de ingreso");
                             try {
                                 if (e && typeof e.preventDefault === "function") {
                                     e.preventDefault();
@@ -1057,6 +1159,7 @@ if (iconoCuenta) {
                                 // Validación: entradas no vacías
                                 if (!usuarioId || !contraseñaId) {
                                     console.warn("Usuario y contraseña son obligatorios.");
+                                    log("warning", "Campos de ingreso vacíos");
                                     return;
                                 }
 
@@ -1072,6 +1175,7 @@ if (iconoCuenta) {
                                 }
 
                                 if (ingreso === true) {
+                                    log("info", "Ingreso de usuario exitoso", { usuario: usuarioId });
                                     if (linkCargaProducto && linkCargaProducto.style) {
                                         linkCargaProducto.style.display = "block";
                                     }
@@ -1123,18 +1227,24 @@ if (iconoCuenta) {
 
                                                 let guardarTemp = JSON.stringify(ingresoNuevo.innerHTML);
                                                 guardarStorage("temperatura", guardarTemp);
+
+                                                log("info", "Usuario recordado y datos guardados en localStorage", { usuario: usuarioId });
                                             } catch (err) {
                                                 console.error("Error guardando información en storage:", err);
+                                                log("error", "Error guardando datos de sesión en localStorage", err);
                                             }
                                         }
                                     }
                                 } else {
                                     console.warn("Usuario o contraseña incorrectos.");
+                                    log("warning", "Intento de ingreso fallido", { usuario: usuarioId });
                                 }
 
                             } catch (err) {
                                 console.error("Error en el proceso de ingreso:", err);
+                                log("error", "Excepción en el envío del formulario de ingreso", err);
                             }
+                            log("debug", "Fin de envío de formulario de ingreso");
                         };
                     }
 
@@ -1145,7 +1255,9 @@ if (iconoCuenta) {
 
         } catch (err) {
             console.error("Error en el evento de apertura de cuenta:", err);
+            log("error", "Excepción general en evento iconoCuenta", err);
         }
+        log("debug", "Fin de evento iconoCuenta");
     };
 }
 
@@ -1159,13 +1271,16 @@ let padreTarjeta = document.getElementById("padreTarjeta");
 
 if (cargarProducto) {
     cargarProducto.onclick = () => {
+        log("debug", "Inicio de evento cargarProducto");
         try {
             if (ventanaCargaProducto && ventanaCargaProducto.style) {
                 if (ventanaCargaProducto.style.display === "none") {
                     ventanaCargaProducto.style.display = "block";
+                    log("info", "Ventana de carga de producto abierta");
 
                     if (formularioCargaProducto) {
                         formularioCargaProducto.onsubmit = (e) => {
+                            log("debug", "Inicio de envío de formulario de carga de producto");
                             try {
                                 if (e && typeof e.preventDefault === "function") {
                                     e.preventDefault();
@@ -1173,6 +1288,7 @@ if (cargarProducto) {
 
                                 let DatosCarga = e.target;
                                 if (!DatosCarga || DatosCarga.length < 7) {
+                                    log("warning", "Formulario de carga incompleto");
                                     console.warn("Formulario incompleto.");
                                     return;
                                 }
@@ -1218,13 +1334,21 @@ if (cargarProducto) {
 
                                         if (padreTarjeta) {
                                             padreTarjeta.appendChild(tarjetanueva);
+                                            log("info", "Producto nuevo cargado correctamente", {
+                                                nombre,
+                                                precio,
+                                                cantidad,
+                                                categoria
+                                            });
                                         }
 
                                         try {
                                             let productoNuevoStorage = JSON.stringify(productoNuevo);
                                             guardarStorage("productosNuevos", productoNuevoStorage);
+                                            log("info", "Producto nuevo guardado en localStorage", { nombre });
                                         } catch (err) {
                                             console.error("Error guardando producto en storage:", err);
+                                            log("error", "Excepción al guardar producto en localStorage", err);
                                         }
 
                                         ventanaCargaProducto.style.display = "none";
@@ -1241,17 +1365,22 @@ if (cargarProducto) {
 
                             } catch (err) {
                                 console.error("Error en la carga de producto:", err);
+                                log("error", "Excepción en el envío del formulario de producto", err);
                             }
+                            log("debug", "Fin de envío de formulario de carga de producto");
                         };
                     }
 
                 } else {
                     ventanaCargaProducto.style.display = "none";
+                    log("info", "Ventana de carga de producto cerrada");
                 }
             }
         } catch (err) {
             console.error("Error al abrir ventana de carga de producto:", err);
+            log("error", "Excepción al abrir ventana de carga de producto", err);
         }
+        log("debug", "Fin de evento cargarProducto");
     };
 }
 
@@ -1292,10 +1421,12 @@ if (
         if (!boton || !nombreElemento) continue;
 
         boton.onchange = () => {
+            log("debug", `Inicio de cambio en buscador por nombre [index=${i}]`);
             try {
                 // Si el botón está activado
                 if (boton.checked === true) {
                     let textoBuscador = eliminarAcentos((nombreElemento.textContent || "").toLowerCase());
+                    log("info", "Filtro activado en buscador por nombre", { textoBuscador });
 
                     // Desmarcar otros botones
                     for (let j = 0; j < botonesBuscadorPorNombre.length; j++) {
@@ -1330,6 +1461,7 @@ if (
                                 cardsCreadas[k].style.display = "flex";
                             }
                         }
+                        log("info", "Productos filtrados correctamente", { categoria: textoBuscador, encontrados });
                     }
 
                 } else {
@@ -1339,16 +1471,20 @@ if (
                             cardsCreadas[k].style.display = "flex";
                         }
                     }
+                    log("info", "Filtro de categoría desactivado - Se muestran todos los productos");
                 }
 
             } catch (err) {
                 console.error("Error en el buscador por nombre:", err);
+                log("error", "Excepción en buscador por nombre", err);
             }
+            log("debug", `Fin de cambio en buscador por nombre [index=${i}]`);
         };
     }
 
 } else {
     console.warn("Elementos insuficientes o longitudes inconsistentes en el buscador por nombre.");
+    log("warning", "Elementos insuficientes para inicializar buscador por nombre");
 }
 
 
